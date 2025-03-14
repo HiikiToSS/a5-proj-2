@@ -19,7 +19,7 @@ def YanGpt(usrPrompt):
     api_key = os.getenv("YANDEX_API_KEY")
     gpt_model = 'yandexgpt-lite'
 
-    system_prompt = 'Убери форматирование текста (жирный и тд), у пользователя он отображается просто хвёздочками и это некрасиво. Дай мне вопросы с выбором ответа на тему от пользователя и ниже правильные ответы на вопросы. ВСЕГДА ВСТАВЛЯЙ МЕЖДУ ВОПРОСАМИ ЗНАК "@"'
+    system_prompt = 'Убери и не используй звёздочки!!!!!!. Создай вопросы с выбором ответа на тему от пользователя и ниже правильные ответы на вопросы'
     user_prompt = usrPrompt
 
     body = {
@@ -66,8 +66,7 @@ def ease_link_kb():
 
 
 def answer_variants():
-    questions = YanGpt(curr_msg).split('@')
-    print(questions)
+    questions = YanGpt('sssssss').split('Вопрос')
     inline_kb_list = [
         [InlineKeyboardButton(text=questions[0], url='https://habr.com/ru/users/yakvenalex/')],
         [InlineKeyboardButton(text=questions[1], url='tg://resolve?domain=yakvenalexx')],
@@ -76,8 +75,11 @@ def answer_variants():
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
 
 async def echo(message: Message) -> None:
-    await message.answer(YanGpt(message.text))
-    print(YanGpt(message.text))
+    textItself = YanGpt(message.text).replace('*', '')
+    await message.answer(textItself)
+    # questions = YanGpt(message.text).split('Вопрос')
+    # print(type(YanGpt(message.text)))
+    # print(questions)
     # await message.answer_photo(FSInputFile()) #фото, которое сгенерено
 
 
@@ -94,6 +96,9 @@ async def test(message: Message) -> None:
 async def check(message: Message) -> None:
     await message.answer('че-как?')
 
+async def start(message: Message) -> None:
+    await message.answer('Привет, какая тема для теста?')
+
 
 async def main() -> None:
     load_dotenv()
@@ -101,10 +106,11 @@ async def main() -> None:
 
     dp = Dispatcher()
 
-    dp.message.register(check, Command('чк'))
-    dp.message.register(get_inline_btn_link, Command('инл'))
-    dp.message.register(test, Command('тема '))
-    # dp.message.register(echo, F.text)
+    # dp.message.register(check, Command('чк'))
+    # dp.message.register(get_inline_btn_link, Command('инл'))
+    # dp.message.register(test, Command('тема '))
+    dp.message.register(start, Command('start'))
+    dp.message.register(echo, F.text)
     bot = Bot(token=bot_token)
     await dp.start_polling(bot)
 
