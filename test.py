@@ -19,7 +19,8 @@ def YanGpt(usrPrompt):
     api_key = os.getenv("YANDEX_API_KEY")
     gpt_model = 'yandexgpt-lite'
 
-    system_prompt = 'Убери и не используй звёздочки!!!!!!. Создай вопросы с выбором ответа на тему от пользователя и ниже правильные ответы на вопросы'
+    system_prompt = 'Тестовый вопрос, с 4-5 вариантами ответа,на тему, которую даст пользователь \
+        и ответ, который ты пометишь символом ^^'
     user_prompt = usrPrompt
 
     body = {
@@ -64,43 +65,36 @@ def ease_link_kb():
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
 
 
-
 def answer_variants():
-    questions = YanGpt('sssssss').split('Вопрос')
+    questions = [a.split() for a in YanGpt('дыхание у рыб')] #      REWRITE ME!!!
     inline_kb_list = [
-        [InlineKeyboardButton(text=questions[0], url='https://habr.com/ru/users/yakvenalex/')],
-        [InlineKeyboardButton(text=questions[1], url='tg://resolve?domain=yakvenalexx')],
-        [InlineKeyboardButton(text=questions[2], web_app=WebAppInfo(url="https://tg-promo-bot.ru/questions"))]
+        [InlineKeyboardButton(1, callback_data='a')],
+        [InlineKeyboardButton(2, callback_data='б')],
+        [InlineKeyboardButton(3, callback_data='в')],
+        [InlineKeyboardButton(4, callback_data='г')],
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
 
 async def echo(message: Message) -> None:
-    textItself = YanGpt(message.text).replace('*', '')
-    await message.answer(textItself)
-    # questions = YanGpt(message.text).split('Вопрос')
-    # print(type(YanGpt(message.text)))
-    # print(questions)
-    # await message.answer_photo(FSInputFile()) #фото, которое сгенерено
-
+    global textItself
+    textItself = YanGpt(message.text)
+    splt = textItself.split('^^')
+    await message.answer(splt)
 
 
 async def get_inline_btn_link(message: Message) -> None:
     await message.answer('Вот тебе инлайн клавиатура со ссылками!', reply_markup=ease_link_kb())
 
+
 async def test(message: Message) -> None:
-    global curr_msg
-    curr_msg = message.text
     await message.answer('Вот тест, лови:', reply_markup=answer_variants())
 
 
-async def nthg(message: Message) -> None:
-    await message.answer('Напиши / topic [тема]')
-
-async def send_on_topic(message: Message) -> None:
-    await message.answer(YanGpt(message.text[6:]).replace('*', ''))
+async def check(message: Message) -> None:
+    await message.answer('че-как?')
 
 async def start(message: Message) -> None:
-    await message.answer('Привет, какая тема для теста? \n Для того, чтобы выбрать тему напиши    / topic [тема]')
+    await message.answer('Привет, какая тема для теста?')
 
 
 async def main() -> None:
@@ -109,12 +103,11 @@ async def main() -> None:
 
     dp = Dispatcher()
 
-    # dp.message.register(check, Command('чк'))
-    # dp.message.register(get_inline_btn_link, Command('инл'))
-    # dp.message.register(test, Command('тема '))
-    dp.message.register(send_on_topic, Command('topic'))
+    dp.message.register(check, Command('чк'))
+    dp.message.register(get_inline_btn_link, Command('инл'))
+    dp.message.register(test, Command('тема'))
     dp.message.register(start, Command('start'))
-    dp.message.register(nthg, F.text)
+    dp.message.register(echo, F.text)
     bot = Bot(token=bot_token)
     await dp.start_polling(bot)
 
